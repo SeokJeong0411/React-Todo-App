@@ -23,17 +23,24 @@ import { useForm } from "react-hook-form";
 // }
 
 function ToDoList() {
-  const { register, watch } = useForm();
-  console.log(watch());
+  const { register, handleSubmit } = useForm();
+
+  const onValid = (data: any) => {
+    console.log(data);
+  };
+
   return (
     <div>
-      <form>
-        <input {...register("Email")} placeholder="Write a Email" />
-        <input {...register("First Name")} placeholder="Write a First Name" />
-        <input {...register("Last Name")} placeholder="Write a Last Name" />
-        <input {...register("Username")} placeholder="Write a Username" />
-        <input {...register("Password")} placeholder="Write a Password" />
-        <input {...register("Password Confirmation")} placeholder="Write a Password Confirmation" />
+      <form onSubmit={handleSubmit(onValid)}>
+        <input {...register("Email", { required: true })} placeholder="Write a Email" />
+        <input {...register("First Name", { required: true })} placeholder="Write a First Name" />
+        <input {...register("Last Name", { required: true })} placeholder="Write a Last Name" />
+        <input
+          {...register("Username", { required: true, minLength: { value: 5, message: "Your username is too short" } })}
+          placeholder="Write a Username"
+        />
+        <input {...register("Password", { required: true })} placeholder="Write a Password" />
+        <input {...register("Password Confirmation", { required: true })} placeholder="Write a Password Confirmation" />
         <button>+Add</button>
       </form>
     </div>
