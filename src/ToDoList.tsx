@@ -1,5 +1,5 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { DefaultValue } from "recoil";
 
 // function ToDoList() {
 //   const [value, setValue] = useState("");
@@ -22,25 +22,41 @@ import { useForm } from "react-hook-form";
 //   );
 // }
 
+interface IForm {
+  email: string;
+  firstName: string;
+  lastName: string;
+  userName: string;
+  password: string;
+  passwordConfirmation: string;
+}
+
 function ToDoList() {
-  const { register, handleSubmit } = useForm();
+  const { register, handleSubmit, formState } = useForm<IForm>({ defaultValues: { email: "@naver.com" } });
 
   const onValid = (data: any) => {
     console.log(data);
   };
-
+  console.log(formState.errors);
   return (
     <div>
       <form onSubmit={handleSubmit(onValid)}>
-        <input {...register("Email", { required: true })} placeholder="Write a Email" />
-        <input {...register("First Name", { required: true })} placeholder="Write a First Name" />
-        <input {...register("Last Name", { required: true })} placeholder="Write a Last Name" />
         <input
-          {...register("Username", { required: true, minLength: { value: 5, message: "Your username is too short" } })}
+          {...register("email", {
+            required: "Email is required",
+            pattern: { value: /^[A-Za-z0-9._%+-]+@+[A-Za-z0-9._%+-].[A-Za-z0-9._%+-]/, message: "Only Emails allowed" },
+          })}
+          placeholder="Write a Email"
+        />
+        <span>{formState.errors.email?.message as string}</span>
+        <input {...register("firstName", { required: true })} placeholder="Write a First Name" />
+        <input {...register("lastName", { required: true })} placeholder="Write a Last Name" />
+        <input
+          {...register("userName", { required: true, minLength: { value: 5, message: "Your username is too short" } })}
           placeholder="Write a Username"
         />
-        <input {...register("Password", { required: true })} placeholder="Write a Password" />
-        <input {...register("Password Confirmation", { required: true })} placeholder="Write a Password Confirmation" />
+        <input {...register("password", { required: true })} placeholder="Write a Password" />
+        <input {...register("passwordConfirmation", { required: true })} placeholder="Write a Password Confirmation" />
         <button>+Add</button>
       </form>
     </div>
