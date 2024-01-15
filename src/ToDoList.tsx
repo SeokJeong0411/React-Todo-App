@@ -32,10 +32,13 @@ interface IForm {
 }
 
 function ToDoList() {
-  const { register, handleSubmit, formState } = useForm<IForm>({ defaultValues: { email: "@naver.com" } });
+  const { register, handleSubmit, formState, setError } = useForm<IForm>({ defaultValues: { email: "@naver.com" } });
 
-  const onValid = (data: any) => {
+  const onValid = (data: IForm) => {
     console.log(data);
+    if (data.password !== data.passwordConfirmation) {
+      setError("passwordConfirmation", { message: "Password are not the same" }, { shouldFocus: true });
+    }
   };
   console.log(formState.errors);
   return (
@@ -50,13 +53,27 @@ function ToDoList() {
         />
         <span>{formState.errors.email?.message as string}</span>
         <input {...register("firstName", { required: true })} placeholder="Write a First Name" />
-        <input {...register("lastName", { required: true })} placeholder="Write a Last Name" />
         <input
-          {...register("userName", { required: true, minLength: { value: 5, message: "Your username is too short" } })}
+          {...register("lastName", {
+            required: true,
+            validate: {
+              noKim: (value) => !value.includes("Kim") || "no Kim",
+              noLee: (value) => (value.includes("Lee") ? "no Lee" : true),
+            },
+          })}
+          placeholder="Write a Last Name"
+        />
+        <input
+          {...register("userName", {
+            required: true,
+            minLength: { value: 5, message: "Your username is too short" },
+            validate: (value) => (value.includes("@") ? "no @" : true),
+          })}
           placeholder="Write a Username"
         />
         <input {...register("password", { required: true })} placeholder="Write a Password" />
         <input {...register("passwordConfirmation", { required: true })} placeholder="Write a Password Confirmation" />
+        <span>{formState.errors.passwordConfirmation?.message as string}</span>
         <button>+Add</button>
       </form>
     </div>
