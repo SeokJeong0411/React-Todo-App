@@ -56,7 +56,7 @@ const GlobalStyle = createGlobalStyle`
   body {
     font-family: 'Gothic A1', sans-serif;
     background-color: ${(props) => props.theme.bgColor};
-    color:${(props) => props.theme.textColor}
+    color:black;
   }
   ::-webkit-scrollbar {
     display: none;
