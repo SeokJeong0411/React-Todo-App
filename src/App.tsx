@@ -1,12 +1,13 @@
 import { useRecoilState } from "recoil";
-import { DragDropContext, DropResult } from "react-beautiful-dnd";
+import { DragDropContext, Draggable, DropResult, Droppable } from "react-beautiful-dnd";
 import styled from "styled-components";
 import { toDoState } from "./atoms";
 import Board from "./components/Board";
 
 const Wrapper = styled.div`
   display: flex;
-  max-width: 680px;
+  flex-direction: column;
+  gap: 20px;
   width: 100%;
   margin: 0 auto;
   justify-content: center;
@@ -15,10 +16,21 @@ const Wrapper = styled.div`
 `;
 
 const Boards = styled.div`
-  display: grid;
+  display: flex;
+  justify-content: center;
   width: 100%;
   gap: 10px;
-  grid-template-columns: repeat(3, 1fr);
+`;
+
+const TrashCan = styled.div`
+  text-align: center;
+  width: 200px;
+  height: 70px;
+  padding: 16px 15px;
+  background-position: center;
+  background-image: url("trashcan.svg");
+  background-repeat: no-repeat;
+  background-size: 70px;
 `;
 
 function App() {
@@ -26,10 +38,20 @@ function App() {
 
   const onDragEnd = (info: DropResult) => {
     console.log(info);
-    const { destination, draggableId, source } = info;
+    const { destination, source } = info;
     if (!destination) return;
+    if (destination.droppableId === "trashCan") {
+      setToDos((allBoards) => {
+        const sourceBoardCopy = [...allBoards[source.droppableId]];
+        sourceBoardCopy.splice(source.index, 1);
+        return {
+          ...allBoards,
+          [source.droppableId]: sourceBoardCopy,
+        };
+      });
+      return;
+    }
     if (destination.droppableId === source.droppableId) {
-      //aa
       setToDos((allBoards) => {
         const boardCopy = [...allBoards[source.droppableId]];
         const taskObj = boardCopy[source.index];
@@ -64,6 +86,13 @@ function App() {
             <Board boardId={boardId} key={boardId} toDos={toDos[boardId]} />
           ))}
         </Boards>
+        <Droppable droppableId="trashCan">
+          {(provided, snapshot) => (
+            <TrashCan ref={provided.innerRef} {...provided.droppableProps}>
+              {provided.placeholder}
+            </TrashCan>
+          )}
+        </Droppable>
       </Wrapper>
     </DragDropContext>
   );

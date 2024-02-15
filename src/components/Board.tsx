@@ -7,6 +7,7 @@ import { IToDo, toDoState } from "../atoms";
 import { useSetRecoilState } from "recoil";
 
 const Wrapper = styled.div`
+  width: 200px;
   background-color: ${(props) => props.theme.boardColor};
   padding: 10px 0px;
   border-radius: 10px;
@@ -28,14 +29,15 @@ interface IAreaProps {
 }
 
 const Area = styled.div<IAreaProps>`
-  background-color: ${(props) =>
-    props.isDraggingOver ? "#b2bec3" : props.draggingFromThisWith ? "#dfe6e9" : "transparent"};
+  background-color: ${(props) => (props.isDraggingOver ? "#b2bec3" : "transparent")};
   flex-grow: 1;
   transition: background-color 0.3s ease-in-out;
-  padding: 20px;
+  padding: 20px 15px;
 `;
 
 const Form = styled.form`
+  display: flex;
+  justify-content: center;
   width: 100%;
 `;
 
@@ -70,7 +72,7 @@ function Board({ toDos, boardId }: IBoardProps) {
     <Wrapper>
       <Title>{boardId}</Title>
       <Form onSubmit={handleSubmit(onValid)}>
-        <input {...register("toDo", { required: true })} type="text" placeholder={`Add task on ${boardId}`} />
+        <input {...register("toDo", { required: true })} type="text" placeholder={`Add task on "${boardId}"`} />
       </Form>
 
       <Droppable droppableId={boardId}>
