@@ -1,8 +1,9 @@
 import { useRecoilState } from "recoil";
-import { DragDropContext, Draggable, DropResult, Droppable } from "react-beautiful-dnd";
+import { DragDropContext, DropResult, Droppable } from "react-beautiful-dnd";
 import styled from "styled-components";
 import { toDoState } from "./atoms";
 import Board from "./components/Board";
+import BoardAdder from "./components/BoardAdder";
 
 const Wrapper = styled.div`
   display: flex;
@@ -37,53 +38,77 @@ function App() {
   const [toDos, setToDos] = useRecoilState(toDoState);
 
   const onDragEnd = (info: DropResult) => {
-    console.log(info);
     const { destination, source } = info;
+
     if (!destination) return;
+
     if (destination.droppableId === "trashCan") {
       setToDos((allBoards) => {
-        const sourceBoardCopy = [...allBoards[source.droppableId]];
-        sourceBoardCopy.splice(source.index, 1);
-        return {
-          ...allBoards,
-          [source.droppableId]: sourceBoardCopy,
-        };
+        const boardIndex = allBoards.findIndex((info) => String(info.id) === source.droppableId);
+
+        // ToDos Info
+        const toDosCopy = [...allBoards[boardIndex].content];
+        toDosCopy.splice(source.index, 1);
+
+        // Board Info
+        const boardsCopy = [...allBoards];
+        const newBoards = { ...allBoards[boardIndex], content: toDosCopy };
+        boardsCopy.splice(boardIndex, 1, newBoards);
+
+        return boardsCopy;
       });
       return;
     }
     if (destination.droppableId === source.droppableId) {
       setToDos((allBoards) => {
-        const boardCopy = [...allBoards[source.droppableId]];
-        const taskObj = boardCopy[source.index];
-        boardCopy.splice(source.index, 1);
-        boardCopy.splice(destination.index, 0, taskObj);
-        return {
-          ...allBoards,
-          [source.droppableId]: boardCopy,
-        };
+        const targetIndex = allBoards.findIndex((info) => String(info.id) === source.droppableId);
+
+        // ToDos Info
+        const taskObj = [...allBoards[targetIndex].content][source.index];
+        const targetToDosCopy = [...allBoards[targetIndex].content];
+        targetToDosCopy.splice(source.index, 1);
+        targetToDosCopy.splice(destination.index, 0, taskObj);
+
+        // Board Info
+        const boardsCopy = [...allBoards];
+        const newBoards = { ...allBoards[targetIndex], content: targetToDosCopy };
+        boardsCopy.splice(targetIndex, 1, newBoards);
+
+        return boardsCopy;
       });
+      return;
     } else {
       setToDos((allBoards) => {
-        const sourceBoardCopy = [...allBoards[source.droppableId]];
-        const taskObj = sourceBoardCopy[source.index];
-        const destinationBoardCopy = [...allBoards[destination.droppableId]];
-        sourceBoardCopy.splice(source.index, 1);
-        destinationBoardCopy.splice(destination.index, 0, taskObj);
-        return {
-          ...allBoards,
-          [source.droppableId]: sourceBoardCopy,
-          [destination.droppableId]: destinationBoardCopy,
-        };
+        const sourceIndex = allBoards.findIndex((info) => String(info.id) === source.droppableId);
+        const targetIndex = allBoards.findIndex((info) => String(info.id) === destination.droppableId);
+
+        // ToDos Info
+        const taskObj = [...allBoards[sourceIndex].content][source.index];
+        const sourceToDosCopy = [...allBoards[sourceIndex].content];
+        const targetToDosCopy = [...allBoards[targetIndex].content];
+        sourceToDosCopy.splice(source.index, 1);
+        targetToDosCopy.splice(destination.index, 0, taskObj);
+
+        // Board Info
+        const boardsCopy = [...allBoards];
+        const oldBoards = { ...allBoards[sourceIndex], content: sourceToDosCopy };
+        const newBoards = { ...allBoards[targetIndex], content: targetToDosCopy };
+        boardsCopy.splice(sourceIndex, 1, oldBoards);
+        boardsCopy.splice(targetIndex, 1, newBoards);
+
+        return boardsCopy;
       });
+      return;
     }
   };
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <Wrapper>
+        <BoardAdder />
         <Boards>
-          {Object.keys(toDos).map((boardId) => (
-            <Board boardId={boardId} key={boardId} toDos={toDos[boardId]} />
+          {toDos.map(({ id, title, content }) => (
+            <Board boardId={id} title={title} key={id} toDos={content} />
           ))}
         </Boards>
         <Droppable droppableId="trashCan">

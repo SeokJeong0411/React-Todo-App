@@ -5,16 +5,29 @@ export interface IToDo {
   text: string;
 }
 
-interface IToDoState {
-  [key: string]: IToDo[];
+interface IBoard {
+  id: number;
+  title: string;
+  content: IToDo[];
 }
 
-export const toDoState = atom<IToDoState>({
+export const toDoState = atom<IBoard[]>({
   key: "toDo",
-  default: {
-    "To Do": [],
-    Doing: [],
-    Done: [],
-    asdf: [],
-  },
+  default: [
+    {
+      id: 0,
+      title: "To Do",
+      content: [],
+    },
+    {
+      id: 1,
+      title: "Doing",
+      content: [],
+    },
+    {
+      id: 2,
+      title: "Done",
+      content: [],
+    },
+  ],
 });
