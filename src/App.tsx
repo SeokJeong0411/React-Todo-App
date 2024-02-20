@@ -16,7 +16,9 @@ const Wrapper = styled.div`
   height: 100vh;
 `;
 
-const Boards = styled.div`
+const Boards = styled.div``;
+
+const Area = styled.div`
   display: flex;
   justify-content: center;
   width: 100%;
@@ -42,6 +44,20 @@ function App() {
 
     if (!destination) return;
 
+    // Board Move
+    if (source.droppableId === "main") {
+      setToDos((allBoards) => {
+        const targetObj = { ...allBoards[source.index] };
+        const boardsCopy = [...allBoards];
+        boardsCopy.splice(source.index, 1);
+        boardsCopy.splice(destination.index, 0, targetObj);
+
+        return boardsCopy;
+      });
+      return;
+    }
+
+    // Card Move
     if (destination.droppableId === "trashCan") {
       setToDos((allBoards) => {
         const boardIndex = allBoards.findIndex((info) => String(info.id) === source.droppableId);
@@ -59,6 +75,7 @@ function App() {
       });
       return;
     }
+
     if (destination.droppableId === source.droppableId) {
       setToDos((allBoards) => {
         const targetIndex = allBoards.findIndex((info) => String(info.id) === source.droppableId);
@@ -107,11 +124,20 @@ function App() {
       <Wrapper>
         <BoardAdder />
         <Boards>
-          {toDos.map(({ id, title, content }) => (
-            <Board boardId={id} title={title} key={id} toDos={content} />
-          ))}
+          <Droppable droppableId="main" direction="horizontal" type="board">
+            {(provided, snapshot) => {
+              return (
+                <Area ref={provided.innerRef} {...provided.droppableProps}>
+                  {toDos.map(({ id, title, content }, index) => (
+                    <Board boardId={id} title={title} key={id} toDos={content} index={index} />
+                  ))}
+                  {provided.placeholder}
+                </Area>
+              );
+            }}
+          </Droppable>
         </Boards>
-        <Droppable droppableId="trashCan">
+        <Droppable droppableId="trashCan" type="card">
           {(provided, snapshot) => (
             <TrashCan ref={provided.innerRef} {...provided.droppableProps}>
               {provided.placeholder}

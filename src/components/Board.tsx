@@ -1,4 +1,4 @@
-import { Droppable } from "react-beautiful-dnd";
+import { Draggable, Droppable } from "react-beautiful-dnd";
 import DraggableCard from "./DragabbleCard";
 import styled from "styled-components";
 import { useForm } from "react-hook-form";
@@ -15,11 +15,22 @@ const Wrapper = styled.div`
   flex-direction: column;
 `;
 
+const BoardHeader = styled.div`
+  margin: 0 10px 10px 10px;
+  display: flex;
+  justify-content: space-between;
+`;
+
 const Title = styled.h2`
-  text-align: center;
+  text-align: left;
   font-weight: 600;
-  margin-bottom: 10px;
   font-size: 18px;
+`;
+
+const CloseBtn = styled.img`
+  width: 18px;
+  padding: 2px;
+  cursor: pointer;
 `;
 
 interface IAreaProps {
@@ -44,13 +55,14 @@ interface IBoardProps {
   boardId: number;
   toDos: IToDo[];
   title: string;
+  index: number;
 }
 
 interface IForm {
   toDo: string;
 }
 
-function Board({ boardId, toDos, title }: IBoardProps) {
+function Board({ boardId, toDos, title, index }: IBoardProps) {
   const setToDos = useSetRecoilState(toDoState);
   const { register, setValue, handleSubmit } = useForm<IForm>();
   const onValid = ({ toDo }: IForm) => {
@@ -74,29 +86,49 @@ function Board({ boardId, toDos, title }: IBoardProps) {
     setValue("toDo", "");
   };
 
-  return (
-    <Wrapper>
-      <Title>{title}</Title>
-      <Form onSubmit={handleSubmit(onValid)}>
-        <input {...register("toDo", { required: true })} type="text" placeholder={`Add task on "${title}"`} />
-      </Form>
+  const onCloseClick = () => {
+    setToDos((allBoards) => {
+      const BoardsCopy = [...allBoards];
+      BoardsCopy.splice(index, 1);
 
-      <Droppable droppableId={String(boardId)}>
-        {(provided, snapshot) => (
-          <Area
-            isDraggingOver={snapshot.isDraggingOver}
-            draggingFromThisWith={Boolean(snapshot.draggingFromThisWith)}
-            ref={provided.innerRef}
-            {...provided.droppableProps}
-          >
-            {toDos.map((toDo, index) => (
-              <DraggableCard key={toDo.id} toDoId={toDo.id} toDoText={toDo.text} index={index} />
-            ))}
-            {provided.placeholder}
-          </Area>
-        )}
-      </Droppable>
-    </Wrapper>
+      return BoardsCopy;
+    });
+  };
+
+  return (
+    <Draggable draggableId={boardId + ""} index={index} key={boardId}>
+      {(provided) => {
+        return (
+          <Wrapper ref={provided.innerRef} {...provided.dragHandleProps} {...provided.draggableProps}>
+            <BoardHeader>
+              <Title>{title}</Title>
+              <CloseBtn src={"./btn_close.svg"} onClick={onCloseClick} />
+            </BoardHeader>
+            <Form onSubmit={handleSubmit(onValid)}>
+              <input {...register("toDo", { required: true })} type="text" placeholder={`Add task on "${title}"`} />
+            </Form>
+
+            <Droppable droppableId={String(boardId)} type="card">
+              {(provided, snapshot) => {
+                return (
+                  <Area
+                    isDraggingOver={snapshot.isDraggingOver}
+                    draggingFromThisWith={Boolean(snapshot.draggingFromThisWith)}
+                    ref={provided.innerRef}
+                    {...provided.droppableProps}
+                  >
+                    {toDos.map((toDo, index) => (
+                      <DraggableCard key={toDo.id} toDoId={toDo.id} toDoText={toDo.text} index={index} />
+                    ))}
+                    {provided.placeholder}
+                  </Area>
+                );
+              }}
+            </Droppable>
+          </Wrapper>
+        );
+      }}
+    </Draggable>
   );
 }
 
